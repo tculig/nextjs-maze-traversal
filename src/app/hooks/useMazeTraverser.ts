@@ -44,7 +44,6 @@ export default function useMazeTraverser(mazeGrid: string[][], onUpdate: (state:
         if (!isTraversing.current || !currentPositionRef.current) return;
 
         directionRef.current = findDirection(mazeGrid, currentPositionRef.current, directionRef.current);
-
         const { x, y } = currentPositionRef.current;
         // Move to next position
         currentPositionRef.current = {
@@ -156,6 +155,7 @@ export default function useMazeTraverser(mazeGrid: string[][], onUpdate: (state:
 
     const startTraversal = useCallback(() => {
         collectedLettersRef.current = [];
+        directionRef.current = { x: 0, y: 0 };
         pathLettersRef.current = [];
         errorsRef.current = [];
         visitedRef.current = [];

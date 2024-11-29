@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { createGlobalStyle } from "styled-components";
+import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyles = createGlobalStyle`
-  a { 
-    text-decoration: none;
+  body{
+      height: 100vh;
+      margin: 0;
   }
 `;

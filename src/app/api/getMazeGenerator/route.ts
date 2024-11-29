@@ -10,11 +10,12 @@ const maze1 = `
     +---D--+
 `;
 export type MazeResponse = {
-    newMaze: string;
+    newMazes: string[];
 };
 export async function GET(req: NextRequest): Promise<NextResponse<MazeResponse | { error: string }>> {
     const url = new URL(req.url);
     const seed = url.searchParams.get('seed');
+    const mazesPerRequest = url.searchParams.get('mazesPerRequest');
 
     if (!seed) {
         return NextResponse.json({ error: 'Seed and clientId are required' }, { status: 400 });
@@ -27,6 +28,6 @@ export async function GET(req: NextRequest): Promise<NextResponse<MazeResponse |
     // const newMaze = generateMap(seed, 'GOONIES', 10, 10);
 
     return NextResponse.json({
-        newMaze: maze1,
+        newMazes: [...Array(mazesPerRequest)].map(() => maze1),
     });
 }

@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import Cell from './Cell';
-import useMazeTraverser, { TraversalState } from '../hooks/useMazeTraverser';
 import { transformMap } from './utils';
 /*
 const mazeData = [
@@ -26,33 +25,23 @@ const MazeContainer = styled.div<{ $length: number }>`
   grid-template-columns: repeat(${({ $length }) => $length}, 20px);
   grid-gap: 1px;
   justify-content: center;
-  margin-bottom: 20px;
+  color: black;
+  transform: scale(0.66); 
+  cursor: pointer;
 `;
 interface MazeProps {
   mazeData: string | undefined,
-  handleUpdate: (props: TraversalState) => void,
-  isTraversalTrigered: boolean,
+  onClick: () => void,
 }
 
-const MazePreview = ({ mazeData, handleUpdate, isTraversalTrigered }: MazeProps) => {
-  const [currentPosition, setCurrentPosition] = useState<{ x: number; y: number } | null>(null);
-
+const MazePreview = ({ mazeData, onClick }: MazeProps) => {
   const mazeGrid = useMemo(() => mazeData ? transformMap(mazeData) : null, [mazeData]);
-  const handleUpdateInternal = useCallback((props: TraversalState) => {
-    setCurrentPosition(props.currentPosition);
-    handleUpdate(props);
-  }, [handleUpdate]);
-
-  const { startTraversal } = useMazeTraverser(mazeGrid ?? [], handleUpdateInternal);
-
-  useEffect(() => {
-    if (isTraversalTrigered) startTraversal();
-  }, [isTraversalTrigered, startTraversal])
+  const [flipped, setFlipped] = useState(true);
 
   if (!mazeGrid) return null;
 
   return (
-    <MazeContainer $length={mazeGrid[0]?.length}>
+    <MazeContainer $length={mazeGrid[0]?.length} onClick={() => setFlipped((old) => !old)}>
       {mazeGrid.map((row, y) =>
         row.map((cell, x) => (
           <Cell
@@ -60,7 +49,9 @@ const MazePreview = ({ mazeData, handleUpdate, isTraversalTrigered }: MazeProps)
             x={x}
             y={y}
             value={cell}
-            isCurrent={currentPosition?.x === x && currentPosition?.y === y}
+            isCurrent={false}
+            isPreview={true}
+            isPreviewHidden={flipped}
           />
         ))
       )}
