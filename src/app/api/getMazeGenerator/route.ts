@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import seedrandom from 'seedrandom';
-
-export async function GET(req: NextRequest) {
+// import { generateMap } from './generator';
+const maze1 = `
+  @
+  | +-C--+
+  A |    |
+  +---B--+
+    |      x
+    |      |
+    +---D--+
+`;
+export type MazeResponse = {
+    newMaze: string;
+};
+export async function GET(req: NextRequest): Promise<NextResponse<MazeResponse | { error: string }>> {
     const url = new URL(req.url);
     const seed = url.searchParams.get('seed');
 
@@ -10,12 +21,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Initialize PRNG with the seed
-    const rng = seedrandom(seed);
+    // const rng = seedrandom(seed);
 
     // Generate a new random number based on the seed and track it
-    const newRandom = Math.floor(rng() * 100); // Generate a random number (0-99)
+    // const newMaze = generateMap(seed, 'GOONIES', 10, 10);
 
     return NextResponse.json({
-        newRandom,
+        newMaze: maze1,
     });
 }

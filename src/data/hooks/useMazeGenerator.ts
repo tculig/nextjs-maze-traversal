@@ -1,12 +1,9 @@
+import { MazeResponse } from '@/app/api/getMazeGenerator/route';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 interface useGenerateMazeParams {
     readonly seed: string;
 }
-
-type MazeResponse = {
-    newRandom: number;
-};
 
 const useGenerateMaze = ({ seed }: useGenerateMazeParams) => {
     return useInfiniteQuery({
