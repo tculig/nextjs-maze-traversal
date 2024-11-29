@@ -2,14 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { Container, Maze, Row, Cell, Controls, Button, PlayerInfo } from './page.styles';
+import { useGenerateMaze } from '@/data/hooks/useMazeGenerator';
 
 type Maze = string[][];
 type Position = { x: number; y: number };
+const generateSeed = () => Math.random().toString(36).substring(2, 10);
+const seed = generateSeed();
 
 export default function Home() {
   const [maze, setMaze] = useState<Maze>([]);
   const [user, setUser] = useState<{ name: string; score: number; level: number } | null>(null);
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
+  const { data, isLoading, fetchNextPage, isFetching, hasNextPage } = useGenerateMaze({
+    seed,
+  });
+
+  console.log(data?.pages?.[0]);
 
   useEffect(() => {
     // Fetch maze data
