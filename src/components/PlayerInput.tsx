@@ -13,6 +13,15 @@ const Container = styled.div`
     justify-content: center;
 `;
 
+const Input = styled.input`
+     width: 40px;
+     height: 40px;
+     text-align: center;
+     font-size: 24px;
+     border: 1px solid #ccc;
+     border-radius: 4px;
+`
+
 const PlayerInput: React.FC<PlayerInputProps> = ({ onComplete, targetWord, disabled }) => {
     const [values, setValues] = useState<string[]>([]);
     const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
@@ -59,7 +68,7 @@ const PlayerInput: React.FC<PlayerInputProps> = ({ onComplete, targetWord, disab
     return (
         <Container>
             {values.map((char, index) => (
-                <input
+                <Input
                     disabled={disabled}
                     key={index}
                     ref={(el) => {
@@ -72,14 +81,6 @@ const PlayerInput: React.FC<PlayerInputProps> = ({ onComplete, targetWord, disab
                     value={char}
                     onChange={(e) => handleChange(e.target.value, index)}
                     onKeyDown={(e) => handleKeyDown(e, index)}
-                    style={{
-                        width: '40px',
-                        height: '40px',
-                        textAlign: 'center',
-                        fontSize: '24px',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                    }}
                 />
             ))}
         </Container>
