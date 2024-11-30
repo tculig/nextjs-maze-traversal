@@ -9,8 +9,8 @@ interface useGenerateMazeParams {
 const useGenerateMaze = ({ seed, mazesPerRequest }: useGenerateMazeParams) => {
     return useInfiniteQuery({
         queryKey: ['mazeData', seed],
-        queryFn: async (): Promise<MazeResponse> => {
-            const res = await fetch(`/api/getMazeGenerator?mazesPerRequest=${mazesPerRequest}&seed=${seed}`);
+        queryFn: async ({ pageParam = seed }: { pageParam?: string }): Promise<MazeResponse> => {
+            const res = await fetch(`/api/getMazeGenerator?mazesPerRequest=${mazesPerRequest}&seed=${pageParam}`);
             if (!res.ok) throw new Error('Failed to fetch maze');
             return res.json();
         },

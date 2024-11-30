@@ -9,9 +9,41 @@ const maze1 = `
     |      |
     +---D--+
 `;
+const maze2 = `
+  @---A---+
+          |
+  x-B-+   |
+      |   |
+      +---C
+`;
+const maze3 = `
+     +-O-N-+
+     |     |
+     |   +-I-+
+ @-G-O-+ | | |
+     | | +-+ E
+     +-+     S
+             |
+             x
+`;
+const maze4 = `
+  +-L-+
+ |  +A-+
+@B+ ++ H
+ ++    x
+`;
+const maze5 = `
+  @---A---+
+          |
+  x-B-+   C
+      |   |
+      +---+
+`;
+
 export type MazeResponse = {
     newMazes: string[];
 };
+
 export async function GET(req: NextRequest): Promise<NextResponse<MazeResponse | { error: string }>> {
     const url = new URL(req.url);
     const seed = url.searchParams.get('seed');
@@ -28,6 +60,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<MazeResponse |
     // const newMaze = generateMap(seed, 'GOONIES', 10, 10);
 
     return NextResponse.json({
-        newMazes: [...Array(mazesPerRequest)].map(() => maze1),
+        // newMazes: [...Array(mazesPerRequest)].map(() => maze1),
+        newMazes: [maze1, maze2, maze3, maze4, maze5],
     });
 }
