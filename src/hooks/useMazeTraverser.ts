@@ -19,7 +19,7 @@ export interface TraversalState {
     errors: Error[];
 }
 
-export default function useMazeTraverser(mazeGrid: string[][], onUpdate: (state: TraversalState) => void) {
+export default function useMazeTraverser(mazeGrid: string[][], revealDelay: number, onUpdate: (state: TraversalState) => void) {
     const errorsRef = useRef<Error[]>([]);
     const isTraversing = useRef<boolean>(false);
     const traversalTimeoutRef = useRef<number | null>(null);
@@ -28,7 +28,6 @@ export default function useMazeTraverser(mazeGrid: string[][], onUpdate: (state:
     const currentPositionRef = useRef<Position | null>(null);
     const directionRef = useRef<Direction>({ x: 0, y: 0 });
     const visitedRef = useRef<Position[]>([]);
-    const delayTime = 150;
 
     const sendUpdate = useCallback(() => {
         onUpdate({
@@ -40,56 +39,7 @@ export default function useMazeTraverser(mazeGrid: string[][], onUpdate: (state:
         });
     }, [onUpdate]);
 
-    const traverse = useCallback(() => {
-        if (!isTraversing.current || !currentPositionRef.current) return;
-
-        directionRef.current = findDirection(mazeGrid, currentPositionRef.current, directionRef.current);
-        const { x, y } = currentPositionRef.current;
-        // Move to next position
-        currentPositionRef.current = {
-            x: x + directionRef.current.x,
-            y: y + directionRef.current.y,
-        };
-
-        // Check bounds
-        if (currentPositionRef.current.y < 0 || currentPositionRef.current.y > mazeGrid.length - 1 || currentPositionRef.current.x < 0 || currentPositionRef.current.x > mazeGrid[currentPositionRef.current.y].length - 1) {
-            isTraversing.current = false;
-            sendUpdate();
-            return;
-        }
-
-        const content = mazeGrid[currentPositionRef.current.y][currentPositionRef.current.x];
-        pathLettersRef.current.push(content);
-        if (content === 'x') {
-            // Reached the end
-            isTraversing.current = false;
-            sendUpdate();
-            return;
-        }
-
-        if (/[A-Z]/.test(content)) {
-            // Collect letter
-            let alreadyIncludes = false;
-            // Check if already used
-            for (let i = 0; i < visitedRef.current.length; i++) {
-                if (visitedRef.current[i].x === currentPositionRef.current.x && visitedRef.current[i].y === currentPositionRef.current.y) {
-                    alreadyIncludes = true;
-                    break;
-                }
-            }
-            if (!alreadyIncludes) {
-                collectedLettersRef.current.push(content);
-                visitedRef.current.push(currentPositionRef.current);
-            }
-        }
-
-        sendUpdate();
-
-        // Continue traversal after a delay
-        traversalTimeoutRef.current = window.setTimeout(traverse, delayTime);
-    }, [mazeGrid, sendUpdate]);
-
-    const findDirection = (mazeGrid: string[][], currentPosition: Position, currentDirection: Direction): Direction => {
+    const findDirection = useCallback((mazeGrid: string[][], currentPosition: Position, currentDirection: Direction): Direction => {
         const currentValue = mazeGrid[currentPosition.y][currentPosition.x];
         //const shouldTurn = /[A-Z+]/.test(currentValue);
         const shouldTurn = currentValue === '+';
@@ -151,14 +101,68 @@ export default function useMazeTraverser(mazeGrid: string[][], onUpdate: (state:
             isTraversing.current = false;
             return { x: 0, y: 0 };
         }
-    };
+    }, []);
 
-    const startTraversal = useCallback(() => {
+    const traverse = useCallback(() => {
+        if (!isTraversing.current || !currentPositionRef.current) return;
+
+        directionRef.current = findDirection(mazeGrid, currentPositionRef.current, directionRef.current);
+        const { x, y } = currentPositionRef.current;
+        // Move to next position
+        currentPositionRef.current = {
+            x: x + directionRef.current.x,
+            y: y + directionRef.current.y,
+        };
+
+        // Check bounds
+        if (currentPositionRef.current.y < 0 || currentPositionRef.current.y > mazeGrid.length - 1 || currentPositionRef.current.x < 0 || currentPositionRef.current.x > mazeGrid[currentPositionRef.current.y].length - 1) {
+            isTraversing.current = false;
+            sendUpdate();
+            return;
+        }
+
+        const content = mazeGrid[currentPositionRef.current.y][currentPositionRef.current.x];
+        pathLettersRef.current.push(content);
+        if (content === 'x') {
+            // Reached the end
+            isTraversing.current = false;
+            sendUpdate();
+            return;
+        }
+
+        if (/[A-Z]/.test(content)) {
+            // Collect letter
+            let alreadyIncludes = false;
+            // Check if already used
+            for (let i = 0; i < visitedRef.current.length; i++) {
+                if (visitedRef.current[i].x === currentPositionRef.current.x && visitedRef.current[i].y === currentPositionRef.current.y) {
+                    alreadyIncludes = true;
+                    break;
+                }
+            }
+            if (!alreadyIncludes) {
+                collectedLettersRef.current.push(content);
+                visitedRef.current.push(currentPositionRef.current);
+            }
+        }
+
+        sendUpdate();
+
+        // Continue traversal after a delay
+        traversalTimeoutRef.current = window.setTimeout(traverse, revealDelay);
+    }, [revealDelay, findDirection, mazeGrid, sendUpdate]);
+
+    const resetState = useCallback(() => {
         collectedLettersRef.current = [];
         directionRef.current = { x: 0, y: 0 };
         pathLettersRef.current = [];
         errorsRef.current = [];
         visitedRef.current = [];
+        currentPositionRef.current = null;
+    }, []);
+
+    const startTraversal = useCallback(() => {
+        resetState();
         isTraversing.current = true;
         // Find the starting position '@'
         let posX = -1;
@@ -185,19 +189,20 @@ export default function useMazeTraverser(mazeGrid: string[][], onUpdate: (state:
         } else {
             currentPositionRef.current = { x: posX, y: posY };
             pathLettersRef.current.push(mazeGrid[posY][posX]);
-            window.setTimeout(traverse, delayTime);
+            window.setTimeout(traverse, revealDelay);
         }
 
         sendUpdate();
-    }, [mazeGrid, sendUpdate, traverse]);
+    }, [revealDelay, mazeGrid, resetState, sendUpdate, traverse]);
 
     const stopTraversal = useCallback(() => {
         isTraversing.current = false;
+        resetState();
         if (traversalTimeoutRef.current !== null) {
             clearTimeout(traversalTimeoutRef.current);
         }
         sendUpdate();
-    }, [sendUpdate]);
+    }, [resetState, sendUpdate]);
 
     return { startTraversal, stopTraversal };
 }

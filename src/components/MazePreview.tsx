@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import Cell from './Cell';
-import { transformMap } from './utils';
 import { MazeWithDetails } from '@/types';
 
 const MazeContainer = styled.div<{ $length: number }>`
@@ -26,13 +25,14 @@ const MazePreview = ({ mazeData }: MazeProps) => {
       {mazeData.mazeDefinition.map((row, y) =>
         row.map((cell, x) => (
           <Cell
-            key={`${x}-${y}`}
+            key={`${mazeData.mazeId}-preview-${x}-${y}`}
             x={x}
             y={y}
             value={cell}
             isCurrent={false}
             isPreview={true}
             isPreviewHidden={!mazeData.isSolved}
+            useDelay={true}
           />
         ))
       )}

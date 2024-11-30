@@ -7,13 +7,14 @@ interface CellProps {
   isPreviewHidden?: boolean;
   x: number;
   y: number;
+  useDelay?: boolean;
 }
 
 const CellContainer = styled.div.attrs<{ $isPath: boolean; $isLetter: boolean; $isCurrent: boolean, $isPreview: boolean, $isPreviewHidden: boolean, $delay: number }>(
   ({ $isPreviewHidden, $delay }) => ({
     style: {
       transform: `rotateY(${$isPreviewHidden ? '180' : '0'}deg)`,
-      transitionDelay: `${$delay}s`
+      transition: `transform ${$isPreviewHidden ? '0' : '0.5'}s ease ${$delay}s` // open the tiles slowly, but close them instantly
     }
   })
 )`
@@ -25,8 +26,6 @@ const CellContainer = styled.div.attrs<{ $isPath: boolean; $isLetter: boolean; $
   font-size: 14px;
   border: 1px solid #ccc;
   transform-style: preserve-3d;
-  transition: transform 0.5s ease;
-
   ${(props) =>
     props.$isPath &&
     css`
@@ -77,12 +76,11 @@ const CellContainer = styled.div.attrs<{ $isPath: boolean; $isLetter: boolean; $
 
 `;
 
-const Cell: React.FC<CellProps> = ({ x, y, value, isCurrent, isPreview = false, isPreviewHidden = false }) => {
+const Cell: React.FC<CellProps> = ({ x, y, value, isCurrent, isPreview = false, isPreviewHidden = false, useDelay = false }) => {
   const isPath = value === '|' || value === '-' || value === '+' || value === 'x' || value === '@';
   const isLetter = /[A-Z]/.test(value);
   const isPlaceholder = value === '%';
-  const delay = Math.sqrt(x ** 2 + y ** 2) * 0.1;
-
+  const delay = useDelay ? Math.sqrt(x ** 2 + y ** 2) * 0.1 : 0;
   return (
     <CellContainer $isPath={isPath} $isLetter={isLetter} $isCurrent={isCurrent} $isPreview={isPreview} $isPreviewHidden={isPreviewHidden} $delay={delay}>
       {isPlaceholder ? '' : (value.trim() ? value : '')}

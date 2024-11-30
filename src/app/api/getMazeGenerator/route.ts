@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 // import { generateMap } from './generator';
 const maze1 = `
   @
-  | +-C--+
-  A |    |
-  +---B--+
+  | +-N--+
+  H |    |
+  +---A--+
     |      x
     |      |
     +---D--+
 `;
 const maze2 = `
-  @---A---+
+  @---F---+
           |
-  x-B-+   |
-      |   |
-      +---C
+x +-I-+   R
+K |   L   |
++-C   +---O
 `;
 const maze3 = `
      +-O-N-+
@@ -27,40 +27,42 @@ const maze3 = `
              x
 `;
 const maze4 = `
-  +-L-+
- |  +A-+
-@B+ ++ H
+ +-I-+
+ |  +R-+
+@B+ ++ D
  ++    x
 `;
 const maze5 = `
-  @---A---+
+  @---S---+
           |
-  x-B-+   C
+  x-Y-+   K
       |   |
       +---+
 `;
 
 export type MazeResponse = {
-    newMazes: string[];
+    newMazes: {
+        word: string;
+        maze: string;
+    }[];
 };
 
 export async function GET(req: NextRequest): Promise<NextResponse<MazeResponse | { error: string }>> {
     const url = new URL(req.url);
     const seed = url.searchParams.get('seed');
-    const mazesPerRequest = url.searchParams.get('mazesPerRequest');
+    // const mazesPerRequest = url.searchParams.get('mazesPerRequest');
 
     if (!seed) {
         return NextResponse.json({ error: 'Seed and clientId are required' }, { status: 400 });
     }
 
-    // Initialize PRNG with the seed
-    // const rng = seedrandom(seed);
-
-    // Generate a new random number based on the seed and track it
-    // const newMaze = generateMap(seed, 'GOONIES', 10, 10);
-
     return NextResponse.json({
-        // newMazes: [...Array(mazesPerRequest)].map(() => maze1),
-        newMazes: [maze1, maze2, maze3, maze4, maze5],
+        newMazes: [
+            { word: 'hand', maze: maze1 },
+            { word: 'frolick', maze: maze2 },
+            { word: 'goonies', maze: maze3 },
+            { word: 'bird', maze: maze4 },
+            { word: 'sky', maze: maze5 },
+        ],
     });
 }

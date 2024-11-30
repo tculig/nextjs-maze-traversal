@@ -50,7 +50,7 @@ const SidebarItemCollapsed = styled.div`
 `;
 
 interface SidebarProps {
-    mazeArray: Record<string, MazeWithDetails> | undefined,
+    mazeArray: MazeWithDetails[] | undefined,
     selectMaze: (mazeId: string) => void,
 }
 const CollapsibleSidebar = ({ mazeArray, selectMaze }: SidebarProps) => {
@@ -82,15 +82,15 @@ const CollapsibleSidebar = ({ mazeArray, selectMaze }: SidebarProps) => {
 
     return (
         <SidebarContainer $collapsed={collapsed} ref={divRef}>
-            {(mazeArray) ? (
-                Object.entries(mazeArray).map(([mazeId, mazeData], index) => (width > 150 ? (
-                    <SidebarItem key={index} onClick={() => selectMaze(mazeId)}>
+            {(mazeArray && mazeArray[0]) ? (
+                mazeArray.map((maze, index) => (width > 150 ? (
+                    <SidebarItem key={index} onClick={() => selectMaze(maze.mazeId)}>
                         <MazePreview
-                            mazeData={mazeData}
+                            mazeData={maze}
                         />
                     </SidebarItem>
                 ) : (
-                    <SidebarItemCollapsed key={index}>{index + 1}</SidebarItemCollapsed>
+                    <SidebarItemCollapsed key={index} onClick={() => selectMaze(maze.mazeId)}>{index + 1}</SidebarItemCollapsed>
                 )))
             ) : null}
             <ToggleButton onClick={toggleSidebar}>

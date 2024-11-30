@@ -4,29 +4,27 @@ import { RootContainer, RightContainer } from './page.styles';
 import { useGenerateMaze } from '@/data/hooks/useMazeGenerator';
 import Maze from '../components/Maze';
 import CollapsibleSidebar from '../components/CollapsibleSidebar';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TraversalState } from '../hooks/useMazeTraverser';
 import Controls from '../components/Controls';
 import { v4 as uuidv4 } from 'uuid';
 import { MazeWithDetails } from '@/types';
 import { transformMap } from '../components/utils';
-
-//const generateSeed = () => Math.random().toString(36).substring(2, 10);
-// const seed = generateSeed();
-
+import PlayerInput from '@/components/PlayerInput';
 
 export default function Home() {
-  /*onst [user, setUser] = useState<{ name: string; score: number; level: number } | null>(null);
-   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });*/
-  const { data, isLoading, fetchNextPage, isFetching, hasNextPage } = useGenerateMaze({
+  // const { data, isLoading, fetchNextPage, isFetching, hasNextPage } = useGenerateMaze({
+  const { data } = useGenerateMaze({
     seed: '3eem2ntt',
     mazesPerRequest: 5,
   });
   const [collectedLetters, setCollectedLetters] = useState<string[]>([]);
   const [pathLetters, setPathLetters] = useState<string[]>([]);
-  const [selectedMaze, setSelectedMaze] = useState<MazeWithDetails | null>(null);
-  const [mazesData, setMazesData] = useState<Record<string, MazeWithDetails>>({}); // use a hashmap {mazeId: MazeWithDetails}
+  const [selectedMaze, setSelectedMaze] = useState<MazeWithDetails | undefined>();
+  const [mazesData, setMazesData] = useState<MazeWithDetails[]>([]);
   const [isTraversing, setIsTraversing] = useState<boolean>(false);
+  const mazeRef = useRef<React.ElementRef<typeof Maze>>(null);
+
   const handleUpdate = useCallback(({ collectedLetters, isTraversing, pathLetters }: TraversalState) => {
     setCollectedLetters([...collectedLetters]);
     setPathLetters([...pathLetters]);
@@ -36,46 +34,66 @@ export default function Home() {
   const startTraversal = useCallback(() => {
     setIsTraversing(true);
   }, [])
-  /**
-   *  ...lastPage.newMazes.map(newMaze => ({
-            [uuidv4()]: {
-              mazeDefinition: transformMap(newMaze),
-              isSolved: false,
-            }
-          }))
-   */
+
   useEffect(() => {
     const lastPage = data?.pages[data.pages.length - 1];
-    const gg = (lastPage?.newMazes.map(newMaze => ({
-      [uuidv4()]: {
-        mazeDefinition: transformMap(newMaze),
-        isSolved: false,
-      }
-    })))
-
     if (lastPage) {
-      setMazesData(data => ({
+      setMazesData(data => ([
         ...data,
-        ...(lastPage?.newMazes.map(newMaze => ({
-          [uuidv4()]: {
-            mazeDefinition: transformMap(newMaze),
-            isSolved: false,
-          }
-        }))).reduce((acc, obj) => ({ ...acc, ...obj }), {})
-      }))
+        ...lastPage?.newMazes.map(newMaze => ({
+          mazeDefinition: transformMap(newMaze.maze),
+          solution: newMaze.word,
+          isSolved: false,
+          mazeId: uuidv4(),
+        }))
+      ]));
     }
   }, [data]);
 
+  useEffect(() => {
+    if (mazesData && mazesData.length > 0 && selectedMaze === undefined) {
+      setSelectedMaze(mazesData[0]);
+    }
+  }, [mazesData, selectedMaze]);
+
+  const selectMaze = useCallback((selectedMazeId: string) => {
+    if (mazeRef.current) {
+      mazeRef.current.stopMazeTraversal();
+    }
+    setSelectedMaze(mazesData.find(el => el.mazeId === selectedMazeId));
+  }, [mazesData])
+
+  const resetMaze = useCallback(() => {
+    if (mazeRef.current) {
+      mazeRef.current.resetMaze();
+    }
+  }, []);
+
+  const handleComplete = useCallback(() => {
+    if (mazeRef.current) {
+      mazeRef.current.revealMaze();
+    }
+    setMazesData(mazeData => {
+      const updatedMazeData = [...mazeData];
+      for (let i = 0; i < updatedMazeData.length; i++) {
+        if (updatedMazeData[i].mazeId === selectedMaze?.mazeId) {
+          updatedMazeData[i].isSolved = true;
+        }
+      }
+      return updatedMazeData;
+    })
+  }, [selectedMaze?.mazeId])
 
   return (
     <RootContainer>
       <CollapsibleSidebar
         mazeArray={mazesData}
-        selectMaze={(mazeId) => setSelectedMaze(mazesData[mazeId])}
+        selectMaze={selectMaze}
       />
       <RightContainer>
         <Maze
-          mazeData={data?.pages?.[0]?.newMazes[0]}
+          ref={mazeRef}
+          mazeData={selectedMaze}
           handleUpdate={handleUpdate}
           isTraversalTrigered={isTraversing}
         />
@@ -84,6 +102,12 @@ export default function Home() {
           onStart={startTraversal}
           isTraversing={isTraversing}
           pathLetters={pathLetters}
+          resetMaze={resetMaze}
+        />
+        <PlayerInput
+          onComplete={handleComplete}
+          targetWord={selectedMaze?.solution}
+          disabled={!isTraversing}
         />
       </RightContainer>
     </RootContainer>
