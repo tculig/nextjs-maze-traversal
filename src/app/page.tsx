@@ -15,7 +15,7 @@ import PlayerInput from '@/components/PlayerInput';
 export default function Home() {
   // const { data, isLoading, fetchNextPage, isFetching, hasNextPage } = useGenerateMaze({
   const { data } = useGenerateMaze({
-    seed: '3eem2ntt',
+    seed: '3eem2nth',
     mazesPerRequest: 5,
   });
   const [collectedLetters, setCollectedLetters] = useState<string[]>([]);
